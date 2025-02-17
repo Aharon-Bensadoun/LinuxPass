@@ -1,0 +1,92 @@
+﻿@model IEnumerable<LinuxPass.Models.Server>
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Servers</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Add new server
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-controller="Servers" asp-action="Index">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <label for="SearchString" class="form-label">Filter by Servername</label>
+                        <input type="text" name="SearchString" class="form-control" id="SearchString" placeholder="Enter server name...">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-grid gap-2 d-md-flex">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search me-2"></i>Filter
+                            </button>
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (ViewData["Message"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i>@ViewData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (ViewData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@ViewData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm hover-shadow">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary mb-3">
+                            <i class="bi bi-hdd-network me-2"></i>@item.HostSrvName
+                        </h5>
+                        <p class="card-text">
+                            <strong>Username:</strong> @item.HostSrvUsername
+                        </p>
+                        <div class="d-flex gap-2 mt-3">
+                            <a asp-action="Details" asp-route-id="@item.Id"
+                               class="btn btn-outline-info btn-sm">
+                                <i class="bi bi-info-circle me-1"></i>Details
+                            </a>
+                            <a asp-action="Rotate" asp-route-id="@item.Id"
+                               class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Rotate
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.Id"
+                               class="btn btn-outline-danger btn-sm ms-auto">
+                                <i class="bi bi-trash me-1"></i>Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-3px);
+        transition: transform 0.2s ease-in-out;
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+</style>

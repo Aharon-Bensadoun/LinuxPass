@@ -1,0 +1,123 @@
+﻿@model LinuxPass.Models.Server
+@{
+    ViewData["Title"] = "Edit Server";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-edit me-2"></i>Edit Server
+            </h1>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+
+        <div class="card-body">
+            @if (ViewData["Message"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @ViewData["Message"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="HostSrvName" class="form-label">
+                                <i class="fas fa-server me-2"></i>Server Name
+                            </label>
+                            <input asp-for="HostSrvName" class="form-control form-control-lg" 
+                                   placeholder="Enter server name" />
+                            <span asp-validation-for="HostSrvName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="HostSrvUsername" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <input asp-for="HostSrvUsername" class="form-control form-control-lg" 
+                                   placeholder="Enter username" />
+                            <span asp-validation-for="HostSrvUsername" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label asp-for="HostSrvPassword" class="form-label">
+                                <i class="fas fa-key me-2"></i>Password
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <input asp-for="HostSrvPassword" type="password" class="form-control" 
+                                       placeholder="Enter password" />
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="HostSrvPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-label {
+        font-weight: 500;
+        color: #4a5568;
+    }
+
+    .form-control {
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-control:focus {
+        border-color: #3182ce;
+        box-shadow: 0 0 0 0.2rem rgba(49, 130, 206, 0.25);
+    }
+
+    .card {
+        transition: all 0.3s ease-in-out;
+    }
+
+    .card:hover {
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function (e) {
+            const password = document.getElementById('@Html.IdFor(m => m.HostSrvPassword)');
+            const icon = this.querySelector('i');
+            
+            if (password.type === 'password') {
+                password.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                password.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    </script>
+}

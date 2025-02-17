@@ -1,0 +1,91 @@
+﻿@model LinuxPass.Models.Password
+@{
+    ViewData["Title"] = "Create Password";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h1 class="h3 mb-0">Create New Password</h1>
+    </div>
+
+    <div class="card-body">
+        @if (ViewData["Message"] != null)
+        {
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle me-2"></i>@ViewData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <form asp-action="Create" class="needs-validation" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row g-4">
+                <div class="col-md-8 col-lg-6">
+                    <div class="mb-4">
+                        <label asp-for="Username" class="form-label">
+                            <i class="fas fa-user me-2"></i>Username
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-at"></i>
+                            </span>
+                            <input asp-for="Username" class="form-control" placeholder="Enter username..." />
+                        </div>
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Servername" class="form-label">
+                            <i class="fas fa-server me-2"></i>Server Name
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-globe"></i>
+                            </span>
+                            <input asp-for="Servername" class="form-control" placeholder="Enter server name..." />
+                        </div>
+                        <span asp-validation-for="Servername" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Create Password
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to List
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-lg-6">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>Password Guidelines
+                            </h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>Enter a valid username
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>Specify the target server name
+                                </li>
+                                <li>
+                                    <i class="fas fa-check-circle text-success me-2"></i>The password will be securely encrypted
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

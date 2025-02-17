@@ -1,0 +1,149 @@
+﻿@model LinuxPass.Models.PasswordDetailsViewModel
+@{
+    ViewData["Title"] = "Password Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-key me-2"></i>Password Details
+            </h1>
+            <div class="btn-group">
+                <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-2"></i>Edit
+                </a>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        @if (ViewData["Message"] != null)
+        {
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle me-2"></i>@ViewData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card bg-light border-0 mb-4">
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-3 text-muted">
+                                <i class="fas fa-user me-2"></i>@Html.DisplayNameFor(model => model.Username)
+                            </dt>
+                            <dd class="col-sm-9 fw-bold">
+                                @Html.DisplayFor(model => model.Username)
+                            </dd>
+
+                            <dt class="col-sm-3 text-muted">
+                                <i class="fas fa-server me-2"></i>@Html.DisplayNameFor(model => model.Servername)
+                            </dt>
+                            <dd class="col-sm-9 fw-bold">
+                                @Html.DisplayFor(model => model.Servername)
+                            </dd>
+
+                            <dt class="col-sm-3 text-muted">
+                                <i class="fas fa-lock me-2"></i>@Html.DisplayNameFor(model => model.DecryptedPassword)
+                            </dt>
+                            <dd class="col-sm-9">
+                                <div class="input-group">
+                                    <input type="password" class="form-control" value="@Model.DecryptedPassword" id="passwordField" readonly />
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="toggleIcon"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard()">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sms me-2"></i>Send Password via SMS
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-action="SendSMS" class="needs-validation" novalidate>
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label for="smsPhone" class="form-label">
+                                    <i class="fas fa-phone me-2"></i>Phone Number
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+</span>
+                                    <input type="tel" class="form-control" id="smsPhone" name="smsPhone"
+                                           placeholder="Enter phone number..." required
+                                           pattern="[0-9]{10,15}" />
+                                </div>
+                                <div class="form-text">Enter phone number in international format without spaces</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Send SMS
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-shield-alt me-2"></i>Security Notice
+                        </h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>Password is encrypted
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>SMS delivery is secure
+                            </li>
+                            <li>
+                                <i class="fas fa-exclamation-circle text-warning me-2"></i>Don't share credentials
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('passwordField');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function copyToClipboard() {
+            const passwordField = document.getElementById('passwordField');
+            passwordField.type = 'text';
+            passwordField.select();
+            document.execCommand('copy');
+            passwordField.type = 'password';
+
+            // Show tooltip or notification
+            alert('Password copied to clipboard!');
+        }
+    </script>
+}

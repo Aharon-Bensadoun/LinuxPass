@@ -1,0 +1,54 @@
+﻿@model LinuxPass.Models.Server
+@{
+    ViewData["Title"] = "Delete Server";
+}
+
+<div class="card shadow-sm border-danger">
+    <div class="card-header bg-danger text-white py-3">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+            <h1 class="h3 mb-0">Delete Server Confirmation</h1>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            Are you sure you want to delete this server? This action cannot be undone and may affect associated passwords and connections.
+        </div>
+
+        <div class="card bg-light border-0 mb-4">
+            <div class="card-body">
+                <h4 class="card-title mb-4">
+                    <i class="fas fa-server me-2"></i>Server Details
+                </h4>
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-3 text-muted">
+                        <i class="fas fa-globe me-2"></i>@Html.DisplayNameFor(model => model.HostSrvName)
+                    </dt>
+                    <dd class="col-sm-9 fw-bold">
+                        @Html.DisplayFor(model => model.HostSrvName)
+                    </dd>
+
+                    <dt class="col-sm-3 text-muted">
+                        <i class="fas fa-user me-2"></i>@Html.DisplayNameFor(model => model.HostSrvUsername)
+                    </dt>
+                    <dd class="col-sm-9 fw-bold">
+                        @Html.DisplayFor(model => model.HostSrvUsername)
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <form asp-action="Delete" class="d-flex gap-2">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash-alt me-2"></i>Confirm Delete
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </form>
+    </div>
+</div>

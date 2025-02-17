@@ -1,0 +1,142 @@
+﻿@model LinuxPass.Models.Server
+@{
+    ViewData["Title"] = "Create Server";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-server me-2"></i>Create New Server
+            </h1>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        @if (ViewData["Message"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>@ViewData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-8">
+                <form asp-action="Create" class="needs-validation" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">
+                                <i class="fas fa-network-wired me-2"></i>Server Details
+                            </h5>
+
+                            <div class="mb-4">
+                                <label asp-for="HostSrvName" class="form-label">
+                                    <i class="fas fa-globe me-2"></i>Server Name/IP
+                                </label>
+                                <input asp-for="HostSrvName" class="form-control"
+                                       placeholder="Enter server hostname or IP address" />
+                                <span asp-validation-for="HostSrvName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="HostSrvUsername" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Username
+                                </label>
+                                <input asp-for="HostSrvUsername" class="form-control"
+                                       placeholder="Enter server username" />
+                                <span asp-validation-for="HostSrvUsername" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="HostSrvPassword" class="form-label">
+                                    <i class="fas fa-key me-2"></i>Password
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="HostSrvPassword" type="password" class="form-control"
+                                           placeholder="Enter server password" />
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="togglePassword('HostSrvPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="HostSrvPassword" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="HostSSHKeyPath" class="form-label">
+                                    <i class="fas fa-file-alt me-2"></i>SSH Key Path
+                                </label>
+                                <input asp-for="HostSSHKeyPath" class="form-control"
+                                       placeholder="Enter path to SSH key file (optional)" />
+                                <span asp-validation-for="HostSSHKeyPath" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Optional: Provide the path to your SSH key file if using key-based authentication
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Create Server
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-shield-alt me-2"></i>Security Guidelines
+                        </h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Use strong, unique passwords
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                SSH key authentication is recommended
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Ensure correct permissions on SSH keys
+                            </li>
+                            <li>
+                                <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                Store credentials securely
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.nextElementSibling;
+            const icon = button.querySelector('i');
+
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
+}
