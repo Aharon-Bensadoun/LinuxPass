@@ -1,6 +1,12 @@
 # LinuxPass
 
 LinuxPass is a .NET Core application designed to manage users on Linux servers using SSH keys. It provides a centralized interface for storing and managing SSH credentials using encryption keys, simplifying user access control.
+This app use Entra ID authentication.
+
+
+![DetailPassword](https://github.com/user-attachments/assets/ea11cfb3-6520-4b11-bf3a-5d6a2ada8b5c)
+![IndexPasswords](https://github.com/user-attachments/assets/bfa00021-410d-46c8-80d3-59f3e1f5d3c2)
+![IndexServers](https://github.com/user-attachments/assets/1c4261da-bd14-45f1-aec5-c7895db98c17)
 
 ## Table of Contents
 
