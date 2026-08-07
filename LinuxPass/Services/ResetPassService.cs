@@ -1,6 +1,7 @@
 ﻿using LinuxPass.Data;
 using LinuxPass.Models;
 using Renci.SshNet;
+using System.Text.RegularExpressions;
 
 namespace LinuxPass.Services
 {
@@ -8,6 +9,7 @@ namespace LinuxPass.Services
     {
         private readonly LinuxPassMngContext _context;
         private readonly IConfiguration _configuration;
+        private static readonly Regex UnixUsernameRegex = new("^[a-z_][a-z0-9_-]{0,31}$", RegexOptions.Compiled);
 
         public ResetPassService(LinuxPassMngContext context, IConfiguration configuration)
         {
@@ -33,17 +35,23 @@ namespace LinuxPass.Services
                     {
                         foreach (string user in resultArray)
                         {
+                            if (!IsValidUnixUsername(user))
+                            {
+                                continue;
+                            }
+
                             string encryptionKey = _configuration["EncryptionKey"] ?? "";
-                            // Generate a password
                             var password = PassGenService.GeneratePassword(12, PassGenService.Complexity.High);
-                            var command = client.CreateCommand($"echo '{user}:{password}' | sudo chpasswd");
-                            // Encrypt the password
+                            string escapedUser = EscapeShellSingleQuotedValue(user);
+                            string escapedPassword = EscapeShellSingleQuotedValue(password);
+                            var command = client.CreateCommand($"echo '{escapedUser}:{escapedPassword}' | sudo chpasswd");
                             string encryptedPassword = CryptorService.Cryptor.EncryptString(password, encryptionKey);
-                            // Decrypt the password
-                            string decryptedPassword = CryptorService.Cryptor.DecryptString(encryptedPassword, encryptionKey);
-                            // Reset the password for each user
-                            var resetpassresult = command.Execute();
-                            // Insert the password to the database  
+                            command.Execute();
+                            if (command.ExitStatus != 0)
+                            {
+                                throw new Exception($"Error executing command: {command.Error}");
+                            }
+
                             var newpassword = new Password
                             {
                                 Username = user,
@@ -52,8 +60,9 @@ namespace LinuxPass.Services
                                 AddTime = DateTime.Now
                             };
                             _context.Add(newpassword);
-                            await _context.SaveChangesAsync();
                         }
+
+                        await _context.SaveChangesAsync();
                     }
                     client.Disconnect();
                     return ("Success");
@@ -63,6 +72,16 @@ namespace LinuxPass.Services
                     return ex.Message;
                 }
             }
+        }
+
+        private static bool IsValidUnixUsername(string username)
+        {
+            return !string.IsNullOrWhiteSpace(username) && UnixUsernameRegex.IsMatch(username);
+        }
+
+        private static string EscapeShellSingleQuotedValue(string value)
+        {
+            return value.Replace("'", "'\"'\"'");
         }
     }
 }
