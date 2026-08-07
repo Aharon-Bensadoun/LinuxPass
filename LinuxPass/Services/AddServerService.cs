@@ -1,5 +1,6 @@
 ﻿using LinuxPass.Data;
 using Renci.SshNet;
+using System.Text.RegularExpressions;
 
 namespace LinuxPass.Services
 {
@@ -19,9 +20,17 @@ namespace LinuxPass.Services
             {
                 try
                 {
+                    if (!IsValidUnixUsername(username))
+                    {
+                        throw new ArgumentException("Invalid Unix username.", nameof(username));
+                    }
+
+                    string escapedUsername = EscapeShellArgument(username);
+                    string escapedPubkey = EscapeShellArgument(File.ReadAllText(_configuration["SSHKeyPath"] ?? ""));
+
                     client.Connect();
                     // Add user remote permissions
-                    var command = client.CreateCommand($"sudo cp /etc/sudoers /etc/sudoers.bak && echo '{username} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo && echo '{username} ALL=(ALL:ALL) ALL' | sudo tee /etc/sudoers.d/{username}");
+                    var command = client.CreateCommand($"sudo cp /etc/sudoers /etc/sudoers.bak && printf '%s\\n' {escapedUsername}\\ ALL=\\(ALL\\)\\ NOPASSWD:ALL | sudo EDITOR='tee -a' visudo && printf '%s\\n' {escapedUsername}\\ ALL=\\(ALL:ALL\\)\\ ALL | sudo tee /etc/sudoers.d/{escapedUsername} > /dev/null");
                     command.Execute();
                     string result = "Success";
                     if (command.ExitStatus != 0)
@@ -29,9 +38,7 @@ namespace LinuxPass.Services
                         throw new Exception($"Error executing command: {command.Error}");
                     }
                     //Add trusted pubkey to user
-                    string pubkeypath = _configuration["SSHKeyPath"] ?? "";
-                    string pubkey = File.ReadAllText(pubkeypath);
-                    var pubkeycommand = client.CreateCommand($"mkdir -p ~/.ssh && echo '{pubkey}' | cat >> ~/.ssh/test");
+                    var pubkeycommand = client.CreateCommand($"mkdir -p ~/.ssh && printf '%s\n' {escapedPubkey} >> ~/.ssh/test");
                     pubkeycommand.Execute();
                     if (pubkeycommand.ExitStatus != 0)
                     {
@@ -45,6 +52,16 @@ namespace LinuxPass.Services
                     return (ex.Message);
                 }
             }
+        }
+
+        private static bool IsValidUnixUsername(string username)
+        {
+            return !string.IsNullOrWhiteSpace(username) && Regex.IsMatch(username, "^[a-z_][a-z0-9_-]{0,14}$", RegexOptions.CultureInvariant);
+        }
+
+        private static string EscapeShellArgument(string value)
+        {
+            return $"'{value.Replace("'", "'\\''")}'";
         }
     }
 }
