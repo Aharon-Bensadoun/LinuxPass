@@ -205,6 +205,8 @@ namespace LinuxPass.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Rotate(int id)
         {
             var server = await _context.Servers.FindAsync(id);
