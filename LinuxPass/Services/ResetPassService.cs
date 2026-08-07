@@ -14,6 +14,7 @@ namespace LinuxPass.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
+        private static string EscapeForSingleQuotedShell(string value) => value.Replace("'", "'\"'\"'");
 
         public async Task<string> ResetPass(string hostname, string username, string privateKeyPath)
         {
@@ -36,7 +37,8 @@ namespace LinuxPass.Services
                             string encryptionKey = _configuration["EncryptionKey"] ?? "";
                             // Generate a password
                             var password = PassGenService.GeneratePassword(12, PassGenService.Complexity.High);
-                            var command = client.CreateCommand($"echo '{user}:{password}' | sudo chpasswd");
+                            var escapedUsernamePassword = EscapeForSingleQuotedShell($"{user}:{password}");
+                            var command = client.CreateCommand($"printf '%s\\n' '{escapedUsernamePassword}' | sudo chpasswd");
                             // Encrypt the password
                             string encryptedPassword = CryptorService.Cryptor.EncryptString(password, encryptionKey);
                             // Decrypt the password
@@ -60,6 +62,7 @@ namespace LinuxPass.Services
                 }
                 catch (Exception ex)
                 {
+
                     return ex.Message;
                 }
             }
