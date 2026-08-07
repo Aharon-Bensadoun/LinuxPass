@@ -1,6 +1,7 @@
 ﻿using LinuxPass.Data;
 using LinuxPass.Models;
 using Renci.SshNet;
+using System.Text.RegularExpressions;
 
 namespace LinuxPass.Services
 {
@@ -36,7 +37,9 @@ namespace LinuxPass.Services
                             string encryptionKey = _configuration["EncryptionKey"] ?? "";
                             // Generate a password
                             var password = PassGenService.GeneratePassword(12, PassGenService.Complexity.High);
-                            var command = client.CreateCommand($"echo '{user}:{password}' | sudo chpasswd");
+                            EnsureValidUnixUsername(user);
+                            var escapedPassword = EscapeSingleQuotedShellArgument(password);
+                            var command = client.CreateCommand($"printf '%s\n' '{user}:{escapedPassword}' | sudo chpasswd");
                             // Encrypt the password
                             string encryptedPassword = CryptorService.Cryptor.EncryptString(password, encryptionKey);
                             // Decrypt the password
@@ -63,6 +66,24 @@ namespace LinuxPass.Services
                     return ex.Message;
                 }
             }
+        }
+
+        private static void EnsureValidUnixUsername(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username) || !Regex.IsMatch(username, "^[a-z_][a-z0-9_-]*[$]?$"))
+            {
+                throw new ArgumentException("Invalid Unix username.", nameof(username));
+            }
+        }
+
+        private static string EscapeSingleQuotedShellArgument(string value)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return value.Replace("'", "'\"'\"'");
         }
     }
 }
