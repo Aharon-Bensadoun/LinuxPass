@@ -60,26 +60,48 @@ namespace LinuxPass.Controllers
             {
                 return NotFound();
             }
+
+            var passwordDetails = new PasswordDetailsViewModel
+            {
+                Id = password.Id,
+                Username = password.Username,
+                Servername = password.Servername,
+                DecryptedPassword = null
+            };
+
+            return View(passwordDetails);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reveal(int id)
+        {
+            var password = await _context.Passwords.FirstOrDefaultAsync(m => m.Id == id);
+            if (password == null)
+            {
+                return NotFound();
+            }
+
             try
             {
-                string encryptionKey = _configuration["EncryptionKey"] ?? "";
-                string servername = password.Servername;
-                string encryptedPassword = password.EncryptedPassword;
-                string decryptedpass = CryptorService.Cryptor.DecryptString(encryptedPassword, encryptionKey);
+                var decryptedPassword = CryptorService.Cryptor.DecryptString(
+                    password.EncryptedPassword,
+                    _configuration["EncryptionKey"] ?? string.Empty);
+
                 var passwordDetails = new PasswordDetailsViewModel
                 {
                     Id = password.Id,
                     Username = password.Username,
                     Servername = password.Servername,
-                    DecryptedPassword = decryptedpass
+                    DecryptedPassword = decryptedPassword
                 };
-                return View(passwordDetails);
+
+                return View("Details", passwordDetails);
             }
             catch (Exception ex)
             {
                 return Problem($"error: {ex}");
             }
-
         }
 
         // GET: Passwords/Create
@@ -169,7 +191,8 @@ namespace LinuxPass.Controllers
 
         // POST: SMS/SendSMS
         [HttpPost]
-        public async Task<IActionResult> SendSMS(string smsPhone, int id, string decryptedPassword)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendSMS(string smsPhone, int id)
         {
             var password = await _context.Passwords.FirstOrDefaultAsync(m => m.Id == id);
             if (password == null)
@@ -177,7 +200,7 @@ namespace LinuxPass.Controllers
                 // Handle the case where the password is not found
                 return Problem($"Cannot find password with id: {id} "); // Replace "Error" with the name of your error view
             }
-            decryptedPassword = CryptorService.Cryptor.DecryptString(password.EncryptedPassword, _configuration["EncryptionKey"] ?? "");
+            var decryptedPassword = CryptorService.Cryptor.DecryptString(password.EncryptedPassword, _configuration["EncryptionKey"] ?? string.Empty);
             if (decryptedPassword == null) 
             { 
                 return Problem ("Cannot decrypt password.");
