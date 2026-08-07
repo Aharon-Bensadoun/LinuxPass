@@ -54,7 +54,7 @@
                             </dt>
                             <dd class="col-sm-9">
                                 <div class="input-group">
-                                    <input type="password" class="form-control" value="@Model.DecryptedPassword" id="passwordField" readonly />
+                                    <input type="password" class="form-control" value="@(Model?.DecryptedPassword ?? string.Empty)" id="passwordField" readonly />
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
                                         <i class="fas fa-eye" id="toggleIcon"></i>
                                     </button>
@@ -75,7 +75,8 @@
                     </div>
                     <div class="card-body">
                         <form method="post" asp-action="SendSMS" class="needs-validation" novalidate>
-                            <input type="hidden" name="id" value="@Model.Id" />
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@(Model?.Id ?? 0)" />
                             <div class="mb-3">
                                 <label for="smsPhone" class="form-label">
                                     <i class="fas fa-phone me-2"></i>Phone Number
