@@ -169,18 +169,18 @@ namespace LinuxPass.Controllers
 
         // POST: SMS/SendSMS
         [HttpPost]
-        public async Task<IActionResult> SendSMS(string smsPhone, int id, string decryptedPassword)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendSMS(string smsPhone, int id)
         {
             var password = await _context.Passwords.FirstOrDefaultAsync(m => m.Id == id);
             if (password == null)
             {
-                // Handle the case where the password is not found
-                return Problem($"Cannot find password with id: {id} "); // Replace "Error" with the name of your error view
+                return Problem($"Cannot find password with id: {id} ");
             }
-            decryptedPassword = CryptorService.Cryptor.DecryptString(password.EncryptedPassword, _configuration["EncryptionKey"] ?? "");
+            var decryptedPassword = CryptorService.Cryptor.DecryptString(password.EncryptedPassword, _configuration["EncryptionKey"] ?? "");
             if (decryptedPassword == null) 
             { 
-                return Problem ("Cannot decrypt password.");
+                return Problem("Cannot decrypt password.");
             }
             var passwordDetails = new PasswordDetailsViewModel
             {

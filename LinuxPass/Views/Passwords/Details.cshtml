@@ -75,6 +75,7 @@
                     </div>
                     <div class="card-body">
                         <form method="post" asp-action="SendSMS" class="needs-validation" novalidate>
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@Model.Id" />
                             <div class="mb-3">
                                 <label for="smsPhone" class="form-label">
