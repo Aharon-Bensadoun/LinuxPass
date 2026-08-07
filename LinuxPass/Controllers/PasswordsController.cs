@@ -1,9 +1,9 @@
 ﻿using LinuxPass.Data;
 using LinuxPass.Models;
 using LinuxPass.Services;
+using LinuxPass.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Web;
 
 namespace LinuxPass.Controllers
 {
@@ -106,6 +106,11 @@ namespace LinuxPass.Controllers
             if (sshUser == null)
             {
                 ViewData["Message"] = "Server not found.";
+                return View(password);
+            }
+            if (!UnixUsernameValidator.IsValid(password.Username))
+            {
+                ViewData["Message"] = "Username contains invalid characters.";
                 return View(password);
             }
             // Check if user already exists with the same server name
