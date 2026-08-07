@@ -54,7 +54,7 @@
                             </dt>
                             <dd class="col-sm-9">
                                 <div class="input-group">
-                                    <input type="password" class="form-control" value="@Model.DecryptedPassword" id="passwordField" readonly />
+                                    <input type="password" class="form-control" value="@(Model?.DecryptedPassword ?? string.Empty)" id="passwordField" readonly />
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
                                         <i class="fas fa-eye" id="toggleIcon"></i>
                                     </button>
@@ -75,7 +75,8 @@
                     </div>
                     <div class="card-body">
                         <form method="post" asp-action="SendSMS" class="needs-validation" novalidate>
-                            <input type="hidden" name="id" value="@Model.Id" />
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model?.Id" />
                             <div class="mb-3">
                                 <label for="smsPhone" class="form-label">
                                     <i class="fas fa-phone me-2"></i>Phone Number
@@ -126,21 +127,33 @@
             const passwordField = document.getElementById('passwordField');
             const toggleIcon = document.getElementById('toggleIcon');
 
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
+            if (!passwordField || !toggleIcon) {
+                return;
+            }
+
+            const input = passwordField;
+
+            if (input.type === 'password') {
+                input.type = 'text';
                 toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
-                passwordField.type = 'password';
+                input.type = 'password';
                 toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         }
 
         function copyToClipboard() {
             const passwordField = document.getElementById('passwordField');
-            passwordField.type = 'text';
-            passwordField.select();
+
+            if (!passwordField) {
+                return;
+            }
+
+            const input = passwordField;
+            input.type = 'text';
+            input.select();
             document.execCommand('copy');
-            passwordField.type = 'password';
+            input.type = 'password';
 
             // Show tooltip or notification
             alert('Password copied to clipboard!');
