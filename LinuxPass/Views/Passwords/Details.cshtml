@@ -50,18 +50,32 @@
                             </dd>
 
                             <dt class="col-sm-3 text-muted">
-                                <i class="fas fa-lock me-2"></i>@Html.DisplayNameFor(model => model.DecryptedPassword)
+                                <i class="fas fa-lock me-2"></i>Password
                             </dt>
                             <dd class="col-sm-9">
-                                <div class="input-group">
-                                    <input type="password" class="form-control" value="@Model.DecryptedPassword" id="passwordField" readonly />
-                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
-                                        <i class="fas fa-eye" id="toggleIcon"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard()">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
+                                @if (string.IsNullOrEmpty(Model.DecryptedPassword))
+                                {
+                                    <form asp-action="Reveal" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye me-2"></i>Reveal password
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    var revealedPassword = Model.DecryptedPassword!;
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" value="@revealedPassword" id="passwordField" readonly />
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                            <i class="fas fa-eye" id="toggleIcon"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard()">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                }
                             </dd>
                         </dl>
                     </div>
@@ -76,6 +90,7 @@
                     <div class="card-body">
                         <form method="post" asp-action="SendSMS" class="needs-validation" novalidate>
                             <input type="hidden" name="id" value="@Model.Id" />
+                            @Html.AntiForgeryToken()
                             <div class="mb-3">
                                 <label for="smsPhone" class="form-label">
                                     <i class="fas fa-phone me-2"></i>Phone Number

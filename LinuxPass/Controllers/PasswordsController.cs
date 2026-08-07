@@ -47,7 +47,7 @@ namespace LinuxPass.Controllers
             return View(uniquePasswords);
         }
         // GET: Passwords/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, bool reveal = false)
         {
             if (id == null)
             {
@@ -62,16 +62,12 @@ namespace LinuxPass.Controllers
             }
             try
             {
-                string encryptionKey = _configuration["EncryptionKey"] ?? "";
-                string servername = password.Servername;
-                string encryptedPassword = password.EncryptedPassword;
-                string decryptedpass = CryptorService.Cryptor.DecryptString(encryptedPassword, encryptionKey);
                 var passwordDetails = new PasswordDetailsViewModel
                 {
                     Id = password.Id,
                     Username = password.Username,
                     Servername = password.Servername,
-                    DecryptedPassword = decryptedpass
+                    DecryptedPassword = reveal ? CryptorService.Cryptor.DecryptString(password.EncryptedPassword, _configuration["EncryptionKey"] ?? "") : null
                 };
                 return View(passwordDetails);
             }
@@ -79,7 +75,6 @@ namespace LinuxPass.Controllers
             {
                 return Problem($"error: {ex}");
             }
-
         }
 
         // GET: Passwords/Create
@@ -169,6 +164,7 @@ namespace LinuxPass.Controllers
 
         // POST: SMS/SendSMS
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendSMS(string smsPhone, int id, string decryptedPassword)
         {
             var password = await _context.Passwords.FirstOrDefaultAsync(m => m.Id == id);
@@ -193,6 +189,19 @@ namespace LinuxPass.Controllers
             string result = await sendSMSService.SendSMSAsync(smsPhone, decryptedPassword);
             ViewData["Message"] = result;
             return View("Details", passwordDetails);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reveal(int id)
+        {
+            var password = await _context.Passwords.FindAsync(id);
+            if (password == null)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Details), new { id, reveal = true });
         }
         private bool PasswordExists(int id)
         {
