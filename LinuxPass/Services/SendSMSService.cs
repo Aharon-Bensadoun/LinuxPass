@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using Microsoft.AspNetCore.WebUtilities;
 
 namespace LinuxPass.Services
 {
@@ -18,11 +18,16 @@ namespace LinuxPass.Services
             string requestorID = _configuration["SMSSettings:RequestorID"] ?? "";
             string apiUrl = _configuration["SMSSettings:APIURL"] ?? "";
 
-            // Encode the message using HttpUtility.UrlEncode
-            string encodedMessage = HttpUtility.UrlEncode(smsMessage);
+            var queryParameters = new Dictionary<string, string?>
+            {
+                ["SMSMessage"] = $"{smsMessage}{decryptedPassword}",
+                ["SMSPhone"] = smsPhone,
+                ["SMSSendMethod"] = smsSendMethod,
+                ["RequestorID"] = requestorID
+            };
 
-            // Construct the URL for the API request
-            string url = $"{apiUrl}?SMSMessage={encodedMessage}{decryptedPassword}&SMSPhone={smsPhone}&SMSSendMethod={smsSendMethod}&RequestorID={requestorID}";
+            // Construct the URL with safely encoded query-string parameters
+            string url = QueryHelpers.AddQueryString(apiUrl, queryParameters);
 
             using (HttpClient client = new HttpClient())
             {
