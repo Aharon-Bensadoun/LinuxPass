@@ -36,7 +36,8 @@ namespace LinuxPass.Services
                             string encryptionKey = _configuration["EncryptionKey"] ?? "";
                             // Generate a password
                             var password = PassGenService.GeneratePassword(12, PassGenService.Complexity.High);
-                            var command = client.CreateCommand($"echo '{user}:{password}' | sudo chpasswd");
+                            var escapedCredentials = EscapeShellArgument($"{user}:{password}");
+                            var command = client.CreateCommand($"echo {escapedCredentials} | sudo chpasswd");
                             // Encrypt the password
                             string encryptedPassword = CryptorService.Cryptor.EncryptString(password, encryptionKey);
                             // Decrypt the password
@@ -64,5 +65,16 @@ namespace LinuxPass.Services
                 }
             }
         }
+
+        private static string EscapeShellArgument(string value)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return $"'{value.Replace("'", "'\"'\"'")}'";
+        }
+
     }
 }
