@@ -20,9 +20,14 @@ namespace LinuxPass.Services
             {
                 try
                 {
+                    ShellCommandSafety.ValidateUnixUsername(username, nameof(username));
+
                     client.Connect();
                     // Add user remote permissions
-                    var command = client.CreateCommand($"sudo useradd -m {username} && echo '{username}:{password}' | sudo chpasswd");
+                    string escapedCredentials = ShellCommandSafety.EscapeSingleQuotedShellArgument($"{username}:{password}");
+                    var command = client.CreateCommand(
+                        $"sudo useradd -m {username} && printf '%s\n' '{escapedCredentials}' | sudo chpasswd");
+
                     command.Execute();
                     string result = "Success";
                     if (command.ExitStatus != 0)
