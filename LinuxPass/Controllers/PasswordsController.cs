@@ -95,6 +95,11 @@ namespace LinuxPass.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Username,Servername,EncryptedPassword,AddTime")] Password password)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(password);
+            }
+
             string generatedpass = PassGenService.GeneratePassword(12, PassGenService.Complexity.Low);
             if (string.IsNullOrEmpty(generatedpass))
             {

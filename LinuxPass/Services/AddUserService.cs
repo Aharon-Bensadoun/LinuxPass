@@ -1,4 +1,5 @@
 ﻿using LinuxPass.Data;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Renci.SshNet;
 
@@ -14,15 +15,25 @@ namespace LinuxPass.Services
             _context = context;
             _configuration = configuration;
         }
-        public string AddUser(string hostname, string sshuser, string privateKeyPath,string username, string password)
+
+        private static readonly Regex UnixUsernameRegex = new("^[a-z_][a-z0-9_-]*[$]?$", RegexOptions.CultureInvariant);
+
+        public string AddUser(string hostname, string sshuser, string privateKeyPath, string username, string password)
         {
             using (var client = new SshClient(hostname, sshuser, new PrivateKeyFile(privateKeyPath)))
             {
                 try
                 {
+                    if (!UnixUsernameRegex.IsMatch(username))
+                    {
+                        return "Username must be a valid Unix account name.";
+                    }
+
                     client.Connect();
                     // Add user remote permissions
-                    var command = client.CreateCommand($"sudo useradd -m {username} && echo '{username}:{password}' | sudo chpasswd");
+                    string escapedUsername = EscapeShellSingleQuotedArgument(username);
+                    string escapedPassword = EscapeShellSingleQuotedArgument(password);
+                    var command = client.CreateCommand($"sudo useradd -m -- '{escapedUsername}' && printf '%s:%s\\n' '{escapedUsername}' '{escapedPassword}' | sudo chpasswd");
                     command.Execute();
                     string result = "Success";
                     if (command.ExitStatus != 0)
@@ -37,6 +48,11 @@ namespace LinuxPass.Services
                     return (ex.Message);
                 }
             }
+        }
+
+        private static string EscapeShellSingleQuotedArgument(string value)
+        {
+            return value.Replace("'", "'\\''");
         }
     }
 }
