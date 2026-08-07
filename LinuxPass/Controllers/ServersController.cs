@@ -1,6 +1,7 @@
 ﻿using LinuxPass.Data;
 using LinuxPass.Models;
 using LinuxPass.Services;
+using LinuxPass.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -85,6 +86,13 @@ namespace LinuxPass.Controllers
                     ViewData["Message"] = "Server name already exists.";
                     return View(server);
                 }
+
+                if (!UnixUsernameValidator.IsValid(server.HostSrvUsername))
+                {
+                    ViewData["Message"] = "Server SSH username is invalid.";
+                    return View(server);
+                }
+
                 AddServerService addServerService = new AddServerService(_context, _configuration);
                 string result = addServerService.ResetPass(server.HostSrvName, server.HostSrvUsername, server.HostSrvPassword);
                 if (result == "Success")
@@ -143,6 +151,13 @@ namespace LinuxPass.Controllers
                         ViewData["Message"] = "Password cannot be null.";
                         return View(server);
                     }
+
+                    if (!UnixUsernameValidator.IsValid(server.HostSrvUsername))
+                    {
+                        ViewData["Message"] = "Server SSH username is invalid.";
+                        return View(server);
+                    }
+
                     AddServerService addServerService = new AddServerService(_context, _configuration);
                     string result = addServerService.ResetPass(server.HostSrvName, server.HostSrvUsername, server.HostSrvPassword);
                     if (result == "Success")
