@@ -39,8 +39,6 @@ namespace LinuxPass.Services
                             var command = client.CreateCommand($"echo '{user}:{password}' | sudo chpasswd");
                             // Encrypt the password
                             string encryptedPassword = CryptorService.Cryptor.EncryptString(password, encryptionKey);
-                            // Decrypt the password
-                            string decryptedPassword = CryptorService.Cryptor.DecryptString(encryptedPassword, encryptionKey);
                             // Reset the password for each user
                             var resetpassresult = command.Execute();
                             // Insert the password to the database  
