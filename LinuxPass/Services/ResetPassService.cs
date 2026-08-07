@@ -36,13 +36,21 @@ namespace LinuxPass.Services
                             string encryptionKey = _configuration["EncryptionKey"] ?? "";
                             // Generate a password
                             var password = PassGenService.GeneratePassword(12, PassGenService.Complexity.High);
-                            var command = client.CreateCommand($"echo '{user}:{password}' | sudo chpasswd");
+                            string escapedCredentials = ShellCommandSafety.EscapeSingleQuotedShellArgument($"{user}:{password}");
+                            var command = client.CreateCommand(
+                                $"printf '%s\n' '{escapedCredentials}' | sudo chpasswd");
+
                             // Encrypt the password
                             string encryptedPassword = CryptorService.Cryptor.EncryptString(password, encryptionKey);
+
                             // Decrypt the password
                             string decryptedPassword = CryptorService.Cryptor.DecryptString(encryptedPassword, encryptionKey);
                             // Reset the password for each user
-                            var resetpassresult = command.Execute();
+                            command.Execute();
+                            if (command.ExitStatus != 0)
+                            {
+                                throw new Exception($"Error executing command for user '{user}': {command.Error}");
+                            }
                             // Insert the password to the database  
                             var newpassword = new Password
                             {
