@@ -16,13 +16,17 @@ namespace LinuxPass.Services
         }
         public string AddUser(string hostname, string sshuser, string privateKeyPath,string username, string password)
         {
+            username = ShellCommandSafety.ValidateUnixUserName(username);
+
             using (var client = new SshClient(hostname, sshuser, new PrivateKeyFile(privateKeyPath)))
             {
                 try
                 {
                     client.Connect();
                     // Add user remote permissions
-                    var command = client.CreateCommand($"sudo useradd -m {username} && echo '{username}:{password}' | sudo chpasswd");
+                    var escapedUsernamePassword = ShellCommandSafety.EscapeSingleQuoted($"{username}:{password}");
+                    var command = client.CreateCommand(
+                        $"sudo useradd -m {username} && printf '%s\\n' '{escapedUsernamePassword}' | sudo chpasswd");
                     command.Execute();
                     string result = "Success";
                     if (command.ExitStatus != 0)
