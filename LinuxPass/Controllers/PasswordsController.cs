@@ -169,6 +169,7 @@ namespace LinuxPass.Controllers
 
         // POST: SMS/SendSMS
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendSMS(string smsPhone, int id, string decryptedPassword)
         {
             var password = await _context.Passwords.FirstOrDefaultAsync(m => m.Id == id);
