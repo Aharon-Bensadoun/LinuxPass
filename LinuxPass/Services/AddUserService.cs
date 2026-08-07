@@ -14,15 +14,34 @@ namespace LinuxPass.Services
             _context = context;
             _configuration = configuration;
         }
+
+        private static bool IsValidUnixUserName(string username)
+        {
+            return !string.IsNullOrWhiteSpace(username)
+                && username.Length <= 32
+                && username.All(c => char.IsLetterOrDigit(c) || c is '-' or '_');
+        }
+
+        private static string ShellEscape(string value)
+        {
+            return $"'{value.Replace("'", "'\\''")}'";
+        }
         public string AddUser(string hostname, string sshuser, string privateKeyPath,string username, string password)
         {
+            if (!IsValidUnixUserName(username))
+            {
+                return "Invalid Unix username.";
+            }
+
             using (var client = new SshClient(hostname, sshuser, new PrivateKeyFile(privateKeyPath)))
             {
                 try
                 {
                     client.Connect();
                     // Add user remote permissions
-                    var command = client.CreateCommand($"sudo useradd -m {username} && echo '{username}:{password}' | sudo chpasswd");
+                    var command = client.CreateCommand(
+                        $"sudo useradd -m -- {ShellEscape(username)} && printf '%s\\n' {ShellEscape($"{username}:{password}")} | sudo chpasswd");
+
                     command.Execute();
                     string result = "Success";
                     if (command.ExitStatus != 0)

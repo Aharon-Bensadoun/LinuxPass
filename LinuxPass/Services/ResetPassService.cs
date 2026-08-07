@@ -15,6 +15,11 @@ namespace LinuxPass.Services
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
+        private static string ShellEscape(string value)
+        {
+            return $"'{value.Replace("'", "'\\''")}'";
+        }
+
         public async Task<string> ResetPass(string hostname, string username, string privateKeyPath)
         {
             using (var client = new SshClient(hostname, username, new PrivateKeyFile(privateKeyPath)))
@@ -36,7 +41,8 @@ namespace LinuxPass.Services
                             string encryptionKey = _configuration["EncryptionKey"] ?? "";
                             // Generate a password
                             var password = PassGenService.GeneratePassword(12, PassGenService.Complexity.High);
-                            var command = client.CreateCommand($"echo '{user}:{password}' | sudo chpasswd");
+                            var command = client.CreateCommand(
+                                $"printf '%s\\n' {ShellEscape($"{user}:{password}")} | sudo chpasswd");
                             // Encrypt the password
                             string encryptedPassword = CryptorService.Cryptor.EncryptString(password, encryptionKey);
                             // Decrypt the password
