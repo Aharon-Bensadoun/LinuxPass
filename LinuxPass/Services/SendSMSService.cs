@@ -1,49 +1,47 @@
-﻿using System.Web;
+﻿using System.Net;
 
 namespace LinuxPass.Services
 {
     public class SendSMSService
     {
         private readonly IConfiguration _configuration;
+        private readonly HttpClient _httpClient;
 
-        public SendSMSService(IConfiguration configuration)
+        public SendSMSService(IConfiguration configuration, HttpClient httpClient)
         {
             _configuration = configuration;
+            _httpClient = httpClient;
         }
 
-        public async Task<string> SendSMSAsync(string smsPhone, string decryptedPassword)
+        public async Task<string> SendSMSAsync(string smsPhone)
         {
-            string smsMessage = _configuration["SMSSettings:SMSMessage"] ?? "";
-            string smsSendMethod = _configuration["SMSSettings:SMSSendMethod"] ?? "";
-            string requestorID = _configuration["SMSSettings:RequestorID"] ?? "";
-            string apiUrl = _configuration["SMSSettings:APIURL"] ?? "";
+            string smsMessage = _configuration["SMSSettings:SMSMessage"] ?? string.Empty;
+            string smsSendMethod = _configuration["SMSSettings:SMSSendMethod"] ?? string.Empty;
+            string requestorID = _configuration["SMSSettings:RequestorID"] ?? string.Empty;
+            string apiUrl = _configuration["SMSSettings:APIURL"] ?? string.Empty;
 
-            // Encode the message using HttpUtility.UrlEncode
-            string encodedMessage = HttpUtility.UrlEncode(smsMessage);
-
-            // Construct the URL for the API request
-            string url = $"{apiUrl}?SMSMessage={encodedMessage}{decryptedPassword}&SMSPhone={smsPhone}&SMSSendMethod={smsSendMethod}&RequestorID={requestorID}";
-
-            using (HttpClient client = new HttpClient())
+            if (string.IsNullOrWhiteSpace(apiUrl))
             {
-                try
-                {
-                    // Send the GET request
-                    HttpResponseMessage response = await client.GetAsync(url);
+                return "SMS sending is disabled: API URL is not configured.";
+            }
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        return "SMS sent successfully!";
-                    }
-                    else
-                    {
-                        return $"Error: {response.StatusCode}";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    return $"Exception occurred: {ex.Message}";
-                }
+            string encodedMessage = WebUtility.UrlEncode(smsMessage);
+            string encodedPhone = WebUtility.UrlEncode(smsPhone);
+            string encodedMethod = WebUtility.UrlEncode(smsSendMethod);
+            string encodedRequestorId = WebUtility.UrlEncode(requestorID);
+            string url = $"{apiUrl}?SMSMessage={encodedMessage}&SMSPhone={encodedPhone}&SMSSendMethod={encodedMethod}&RequestorID={encodedRequestorId}";
+
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync(url);
+
+                return response.IsSuccessStatusCode
+                    ? "SMS request submitted successfully."
+                    : $"Error: {response.StatusCode}";
+            }
+            catch (Exception ex)
+            {
+                return $"Exception occurred: {ex.Message}";
             }
         }
     }

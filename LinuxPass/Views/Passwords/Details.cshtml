@@ -11,7 +11,7 @@
                 <i class="fas fa-key me-2"></i>Password Details
             </h1>
             <div class="btn-group">
-                <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-primary">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
                     <i class="fas fa-edit me-2"></i>Edit
                 </a>
                 <a asp-action="Index" class="btn btn-outline-secondary">
@@ -74,7 +74,12 @@
                         </h5>
                     </div>
                     <div class="card-body">
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Password delivery via SMS is disabled. Only the configured notification message is sent.
+                        </div>
                         <form method="post" asp-action="SendSMS" class="needs-validation" novalidate>
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@Model.Id" />
                             <div class="mb-3">
                                 <label for="smsPhone" class="form-label">
@@ -104,10 +109,10 @@
                         </h5>
                         <ul class="list-unstyled mb-0">
                             <li class="mb-2">
-                                <i class="fas fa-check-circle text-success me-2"></i>Password is encrypted
+                                <i class="fas fa-check-circle text-success me-2"></i>Password is encrypted at rest
                             </li>
                             <li class="mb-2">
-                                <i class="fas fa-check-circle text-success me-2"></i>SMS delivery is secure
+                                <i class="fas fa-exclamation-circle text-warning me-2"></i>Password is not sent over SMS
                             </li>
                             <li>
                                 <i class="fas fa-exclamation-circle text-warning me-2"></i>Don't share credentials
@@ -135,15 +140,17 @@
             }
         }
 
-        function copyToClipboard() {
+        async function copyToClipboard() {
             const passwordField = document.getElementById('passwordField');
-            passwordField.type = 'text';
-            passwordField.select();
-            document.execCommand('copy');
-            passwordField.type = 'password';
+            const originalType = passwordField.type;
 
-            // Show tooltip or notification
-            alert('Password copied to clipboard!');
+            passwordField.type = 'text';
+            try {
+                await navigator.clipboard.writeText(passwordField.value);
+                alert('Password copied to clipboard!');
+            } finally {
+                passwordField.type = originalType;
+            }
         }
     </script>
 }
