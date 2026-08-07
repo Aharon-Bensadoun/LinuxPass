@@ -11,6 +11,8 @@ public partial class Password
 
     [Column("username")]
     [StringLength(15)]
+    [Required]
+    [RegularExpression("^[a-z_][a-z0-9_-]*[$]?$", ErrorMessage = "Username must be a valid Unix account name.")]
     [Unicode(false)]
     public string Username { get; set; } = null!;
 
