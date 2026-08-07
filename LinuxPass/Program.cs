@@ -19,6 +19,8 @@ builder.Services.AddMvc(options =>
         .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
 }).AddMicrosoftIdentityUI();
+builder.Services.AddHttpClient<LinuxPass.Services.SendSMSService>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

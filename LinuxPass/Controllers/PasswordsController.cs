@@ -1,22 +1,25 @@
 ﻿using LinuxPass.Data;
 using LinuxPass.Models;
 using LinuxPass.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Web;
 
 namespace LinuxPass.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class PasswordsController : Controller
     {
         private readonly LinuxPassMngContext _context;
         private readonly IConfiguration _configuration;
+        private readonly SendSMSService _sendSMSService;
 
         // Combine both constructors into one
-        public PasswordsController(LinuxPassMngContext context, IConfiguration configuration)
+        public PasswordsController(LinuxPassMngContext context, IConfiguration configuration, SendSMSService sendSMSService)
         {
             _context = context;
             _configuration = configuration;
+            _sendSMSService = sendSMSService;
         }
 
         // GET: Passwords
@@ -169,29 +172,24 @@ namespace LinuxPass.Controllers
 
         // POST: SMS/SendSMS
         [HttpPost]
-        public async Task<IActionResult> SendSMS(string smsPhone, int id, string decryptedPassword)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendSMS(string smsPhone, int id)
         {
             var password = await _context.Passwords.FirstOrDefaultAsync(m => m.Id == id);
+            ViewData["Message"] = "Sending passwords by SMS has been disabled for security reasons. Use an administrator-approved credential reset flow instead.";
+
             if (password == null)
             {
                 // Handle the case where the password is not found
                 return Problem($"Cannot find password with id: {id} "); // Replace "Error" with the name of your error view
-            }
-            decryptedPassword = CryptorService.Cryptor.DecryptString(password.EncryptedPassword, _configuration["EncryptionKey"] ?? "");
-            if (decryptedPassword == null) 
-            { 
-                return Problem ("Cannot decrypt password.");
             }
             var passwordDetails = new PasswordDetailsViewModel
             {
                 Id = password.Id,
                 Username = password.Username,
                 Servername = password.Servername,
-                DecryptedPassword = decryptedPassword
+                DecryptedPassword = string.Empty
             };
-            SendSMSService sendSMSService = new SendSMSService(_configuration);
-            string result = await sendSMSService.SendSMSAsync(smsPhone, decryptedPassword);
-            ViewData["Message"] = result;
             return View("Details", passwordDetails);
         }
         private bool PasswordExists(int id)
