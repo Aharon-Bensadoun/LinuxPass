@@ -67,10 +67,13 @@
                                class="btn btn-outline-info btn-sm">
                                 <i class="bi bi-info-circle me-1"></i>Details
                             </a>
-                            <a asp-action="Rotate" asp-route-id="@item.Id"
-                               class="btn btn-outline-success btn-sm">
-                                <i class="bi bi-arrow-clockwise me-1"></i>Rotate
-                            </a>
+                            <form asp-action="Rotate" asp-route-id="@item.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-success btn-sm"
+                                        onclick="return confirm('Rotate the server password now?');">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Rotate
+                                </button>
+                            </form>
                             <a asp-action="Delete" asp-route-id="@item.Id"
                                class="btn btn-outline-danger btn-sm ms-auto">
                                 <i class="bi bi-trash me-1"></i>Delete
