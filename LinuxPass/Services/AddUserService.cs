@@ -1,6 +1,6 @@
 ﻿using LinuxPass.Data;
-using Microsoft.EntityFrameworkCore;
 using Renci.SshNet;
+using System.Text.RegularExpressions;
 
 namespace LinuxPass.Services
 {
@@ -21,8 +21,10 @@ namespace LinuxPass.Services
                 try
                 {
                     client.Connect();
+                    EnsureValidUnixUsername(username);
                     // Add user remote permissions
-                    var command = client.CreateCommand($"sudo useradd -m {username} && echo '{username}:{password}' | sudo chpasswd");
+                    var escapedCredentials = EscapeShellArgument($"{username}:{password}");
+                    var command = client.CreateCommand($"sudo useradd -m {EscapeShellArgument(username)} && echo {escapedCredentials} | sudo chpasswd");
                     command.Execute();
                     string result = "Success";
                     if (command.ExitStatus != 0)
@@ -37,6 +39,24 @@ namespace LinuxPass.Services
                     return (ex.Message);
                 }
             }
+        }
+
+        private static void EnsureValidUnixUsername(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username) || !Regex.IsMatch(username, "^[a-z_][a-z0-9_-]*[$]?$", RegexOptions.CultureInvariant))
+            {
+                throw new ArgumentException("Invalid Unix username.", nameof(username));
+            }
+        }
+
+        private static string EscapeShellArgument(string value)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return $"'{value.Replace("'", "'\"'\"'")}'";
         }
     }
 }
