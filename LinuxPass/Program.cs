@@ -1,4 +1,5 @@
 using LinuxPass.Data;
+using LinuxPass.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -11,7 +12,7 @@ var connectionString = builder.Configuration.GetConnectionString("LinuxPassConte
 builder.Services.AddDbContext<LinuxPassMngContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<LinuxPassMngContext>();
 builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration);
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<SendSMSService>();
 builder.Services.AddMvc(options =>
 {
     var policy = new AuthorizationPolicyBuilder()

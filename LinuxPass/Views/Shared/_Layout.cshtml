@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LinuxPass.styles.css" asp-append-version="true" />
-    <!-- Add Font Awesome for better icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -37,7 +36,7 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
                             <span class="nav-link text-white">
-                                <i class="fas fa-user me-1"></i>@User.Identity.Name
+                                <i class="fas fa-user me-1"></i>@(User.Identity?.Name ?? "Unknown user")
                             </span>
                         </li>
                         <li class="nav-item">
