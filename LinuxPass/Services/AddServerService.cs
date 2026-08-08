@@ -19,9 +19,12 @@ namespace LinuxPass.Services
             {
                 try
                 {
+                    var validatedUsername = ShellCommandHelper.ValidateUnixUsername(username);
+                    var escapedUsername = ShellCommandHelper.EscapeSingleQuotedValue(validatedUsername);
+
                     client.Connect();
                     // Add user remote permissions
-                    var command = client.CreateCommand($"sudo cp /etc/sudoers /etc/sudoers.bak && echo '{username} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo && echo '{username} ALL=(ALL:ALL) ALL' | sudo tee /etc/sudoers.d/{username}");
+                    var command = client.CreateCommand($"sudo cp /etc/sudoers /etc/sudoers.bak && echo '{escapedUsername} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo && echo '{escapedUsername} ALL=(ALL:ALL) ALL' | sudo tee '/etc/sudoers.d/{escapedUsername}'");
                     command.Execute();
                     string result = "Success";
                     if (command.ExitStatus != 0)
@@ -31,7 +34,8 @@ namespace LinuxPass.Services
                     //Add trusted pubkey to user
                     string pubkeypath = _configuration["SSHKeyPath"] ?? "";
                     string pubkey = File.ReadAllText(pubkeypath);
-                    var pubkeycommand = client.CreateCommand($"mkdir -p ~/.ssh && echo '{pubkey}' | cat >> ~/.ssh/test");
+                    var escapedPubkey = ShellCommandHelper.EscapeSingleQuotedValue(pubkey);
+                    var pubkeycommand = client.CreateCommand($"mkdir -p ~/.ssh && echo '{escapedPubkey}' | cat >> ~/.ssh/test");
                     pubkeycommand.Execute();
                     if (pubkeycommand.ExitStatus != 0)
                     {
